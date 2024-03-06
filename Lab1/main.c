@@ -9,7 +9,7 @@ int fn_cd(char **args) {
     }
 
     if (chdir(args[1])) {
-        perror("opendir");
+        perror("cd");
         return 0;
     }
 
@@ -31,7 +31,7 @@ int fn_dir(char **args) {
 
     dir = opendir(args[1]);
     if (dir == NULL) {
-        perror("opendir");
+        perror("dir");
         return 0;
     }
 
@@ -131,6 +131,7 @@ int main(int argc, char **argv) {
     while (!status) {
         getcwd(path, 256);
         printf("(Shell) [%s] $ ", path);
+
         inp_ptr = NULL;
         getline(&inp_ptr, &n, stdin);
         char **args = malloc(2 * sizeof(char *));
