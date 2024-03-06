@@ -120,7 +120,6 @@ int fn_cnt () {
 }
 
 int main(int argc, char **argv) {
-    char * prompt = "(Shell) $ ";
     char * inp_ptr;
     size_t n;
     int status = 0;
@@ -130,7 +129,8 @@ int main(int argc, char **argv) {
     setenv("shell", strcat(path, "/myshell"), 1);
 
     while (!status) {
-        printf("%s", prompt);
+        getcwd(path, 256);
+        printf("(Shell) [%s] $ ", path);
         inp_ptr = NULL;
         getline(&inp_ptr, &n, stdin);
         char **args = malloc(2 * sizeof(char *));
