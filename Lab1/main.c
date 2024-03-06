@@ -120,6 +120,11 @@ int fn_cnt () {
 }
 
 int main(int argc, char **argv) {
+    if (argc == 2 && freopen(argv[1], "r", stdin) == NULL) {
+        printf("Error: input file\n");
+        exit(1);
+    }
+
     char * inp_ptr;
     size_t n;
     int status = 0;
