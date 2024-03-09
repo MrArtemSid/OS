@@ -88,7 +88,7 @@ int fn_pause(char **args) {
 
 // Команда 'quit': завершает выполнение оболочки
 int fn_quit(char **args) {
-    return -1;
+    return 1;
 }
 
 // Список команд
@@ -132,6 +132,37 @@ int fn_cnt () {
     return sizeof (fn_list) / sizeof (char *);
 }
 
+// Возвращает количество команд
+bool is_fn_exist (char **args) {
+    int i;
+    for (i = 0; i < fn_cnt(); ++i) { // цикл для поиска и запуска введеных команд
+        if (args[0] != NULL && strcmp(args[0], fn_list[i]) == 0) {
+            status = (*fns[i])(args);
+            break;
+        }
+    }
+
+    return i != fn_cnt();
+}
+
+// Возвращает количество команд
+int run_cmd (char **args) {
+    pid_t pid = fork(); // клонирование процесса
+
+    if (pid == 0) {
+        // Child процесс
+        execvp(args[0], args);
+        perror("execvp");
+        return(EXIT_FAILURE);
+    } else if (pid < 0) {
+        perror("fork");
+    } else {
+        wait(NULL); // Ожидание завершения child процесса
+    }
+
+    return 0;
+}
+
 // Основная функция оболочки
 int main(int argc, char **argv) {
     // Переключение на ввод с файла, если предоставлен аргумент или же вывод ошибки если файла не существует
@@ -142,7 +173,7 @@ int main(int argc, char **argv) {
 
     char * inp_ptr; // указатель на строку
     size_t n; // размер строки
-    int status = 0; // статус выполнения, если не 0, то программа завершается
+    status = 0; // статус выполнения, если не 0, то программа завершается
     char path[256]; // массив для сохранения пути
 
     getcwd(path, 256);
@@ -158,27 +189,8 @@ int main(int argc, char **argv) {
         args[0] = strtok(inp_ptr, " \n"); // сохранение команды
         args[1] = strtok(NULL, " \n"); // сохранение аргумента команды
 
-        int i;
-        for (i = 0; i < fn_cnt(); ++i) { // цикл для поиска и запуска введеных команд
-            if (args[0] != NULL && strcmp(args[0], fn_list[i]) == 0) {
-                status = (*fns[i])(args);
-                break;
-            }
-        }
-
-        if (i == fn_cnt()) { // если команды нет в списке существующих, то запуск программ
-            pid_t pid = fork(); // клонирование процесса
-
-            if (pid == 0) {
-                // Child процесс
-                execvp(args[0], args);
-                perror("execvp");
-                exit(EXIT_FAILURE);
-            } else if (pid < 0) {
-                perror("fork");
-            } else {
-                wait(NULL); // Ожидание завершения child процесса
-            }
+        if (!is_fn_exist(args)) { // если команды нет в списке существующих, то запуск программ
+            run_cmd(args);
         }
 
         n = 0;
