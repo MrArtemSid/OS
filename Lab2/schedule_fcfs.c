@@ -25,9 +25,17 @@ void add(char *name, int priority, int burst) {
     insert(&tasks, newTask);
 }
 
-void schedule() {
-    Task *currTask;
-    while ((currTask = pickNextTask())) {
-        run(currTask, currTask->burst);
+void schedule_helper(Task *currTask) {
+    if (!currTask) {
+        return;
     }
+
+    Task *nextTask = pickNextTask();
+    schedule_helper(nextTask);
+    run(currTask, currTask->burst);
+}
+
+void schedule() {
+    Task *currTask = pickNextTask();
+    schedule_helper(currTask);
 }
