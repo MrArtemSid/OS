@@ -2,6 +2,7 @@
 #include "list.h"
 #include "cpu.h"
 #include "schedulers.h"
+#define COMPARABLE burst
 #include "priority_queue.h"
 
 struct PriorityQueue pq = {{0}, 0};

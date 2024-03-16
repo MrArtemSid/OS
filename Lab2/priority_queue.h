@@ -19,11 +19,11 @@ void heapify(struct PriorityQueue *pq, int i) {
     int left = 2 * i + 1;
     int right = 2 * i + 2;
 
-    if (left < pq->size && pq->heap[left].burst < pq->heap[smallest].burst) {
+    if (left < pq->size && pq->heap[left].COMPARABLE < pq->heap[smallest].COMPARABLE) {
         smallest = left;
     }
 
-    if (right < pq->size && pq->heap[right].burst < pq->heap[smallest].burst) {
+    if (right < pq->size && pq->heap[right].COMPARABLE < pq->heap[smallest].COMPARABLE) {
         smallest = right;
     }
 
@@ -42,7 +42,7 @@ void insert_pq(struct PriorityQueue *pq, Task task) {
     pq->heap[i] = task;
     pq->size++;
 
-    while (i > 0 && pq->heap[(i-1)/2].burst > pq->heap[i].burst) {
+    while (i > 0 && pq->heap[(i-1)/2].COMPARABLE > pq->heap[i].COMPARABLE) {
         swap(&pq->heap[i], &pq->heap[(i - 1) / 2]);
         i = (i - 1) / 2;
     }
