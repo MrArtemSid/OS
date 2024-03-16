@@ -14,7 +14,7 @@ Task *pickNextTask() {
     Task *newTask = tasks->task;
     delete(&tasks, newTask);
 
-    return tasks->task;
+    return newTask;
 }
 
 void add(char *name, int priority, int burst) {
