@@ -5,7 +5,7 @@
 #define COMPARABLE priority
 #include "priority_queue.h"
 
-int used[MAX_PRIORITY];
+int used[MAX_PRIORITY + 1];
 struct PriorityQueue pq = {{0}, 0};
 
 struct node *tasks = NULL;
@@ -54,6 +54,7 @@ void schedule_helper_cycle() {
         currTask->burst -= delta;
         if (!currTask->burst) {
             delete(&tasks, currTask);
+            free(currTask);
             return;
         }
     }

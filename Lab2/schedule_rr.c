@@ -38,6 +38,7 @@ void schedule_helper_cycle() {
         currTask->burst -= delta;
         if (!currTask->burst) {
             delete(&tasks, currTask);
+            free(currTask);
             return;
         }
     }
@@ -64,6 +65,7 @@ void schedule_helper(Task *currTask) {
     currTask->burst -= delta;
     if (!currTask->burst) {
         delete(&tasks, currTask);
+        free(currTask);
         return;
     }
 }
