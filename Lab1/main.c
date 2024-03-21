@@ -132,7 +132,7 @@ int fn_cnt () {
     return sizeof (fn_list) / sizeof (char *);
 }
 
-// Возвращает количество команд
+// Проверяет существует ли функция
 bool is_fn_exist (char **args) {
     int i;
     for (i = 0; i < fn_cnt(); ++i) { // цикл для поиска и запуска введеных команд
@@ -145,7 +145,7 @@ bool is_fn_exist (char **args) {
     return i != fn_cnt();
 }
 
-// Возвращает количество команд
+// Запускает внешние программы
 int run_cmd (char **args) {
     pid_t pid = fork(); // клонирование процесса
 
