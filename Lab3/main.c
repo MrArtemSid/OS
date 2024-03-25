@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#define PAGE_CNT 1 << 8
-#define TLB_CNT 16
+#define PAGE_CAPACITY 1 << 8
+#define TLB_CAPACITY 16
 #define FRAME_SIZE 1 << 8
 
 const int offset_mask = (1 << 8) - 1;
@@ -15,43 +15,43 @@ struct page {
     int frame_n;
 };
 
-struct page tlb [TLB_CNT];
-struct page pages [PAGE_CNT];
-char ram[PAGE_CNT][FRAME_SIZE];
+struct page tlb [TLB_CAPACITY];
+struct page pages [PAGE_CAPACITY];
+char ram[PAGE_CAPACITY][FRAME_SIZE];
 
-char tlb_cnt = 0;
-int frame_cnt = 0;
-int page_cnt = 0;
+char tlb_len = 0;
+int frames_len = 0;
+int pages_len = 0;
 int processed_pages = 0;
 
 int page_fault_cnt = 0;
 int tlb_hit = 0;
 
 int read_from_file(struct page *curr_page) {
-    if (frame_cnt >= PAGE_CNT || page_cnt >= PAGE_CNT) {
+    if (frames_len >= PAGE_CAPACITY || pages_len >= PAGE_CAPACITY) {
         return -1;
     }
 
     fseek(backing_store, curr_page->n * FRAME_SIZE, SEEK_SET);
-    fread(ram[frame_cnt], sizeof(char), FRAME_SIZE, backing_store);
+    fread(ram[frames_len], sizeof(char), FRAME_SIZE, backing_store);
 
-    pages[page_cnt].n = curr_page->n;
-    pages[page_cnt].frame_n = frame_cnt;
-    page_cnt++;
+    pages[pages_len].n = curr_page->n;
+    pages[pages_len].frame_n = frames_len;
+    pages_len++;
 
-    return frame_cnt++;
+    return frames_len++;
 }
 
 void insert_tlb(struct page *curr_page) {
-    if (tlb_cnt == 16) {
+    if (tlb_len == 16) {
         memmove(&tlb[0], &tlb[1], sizeof(struct page) * 15);
-        tlb_cnt--;
+        tlb_len--;
     }
-    tlb[tlb_cnt++] = *curr_page;
+    tlb[tlb_len++] = *curr_page;
 }
 
 int get_frame(struct page *curr_page) {
-    for (int i = tlb_cnt; i >= 0; --i) {
+    for (int i = tlb_len; i >= 0; --i) {
         if (tlb[i].n == curr_page->n) {
             curr_page->frame_n = tlb[i].frame_n;
             ++tlb_hit;
@@ -59,7 +59,7 @@ int get_frame(struct page *curr_page) {
         }
     }
 
-    for (int i = 0; i < page_cnt; ++i) {
+    for (int i = 0; i < pages_len; ++i) {
         if (pages[i].n == curr_page->n) {
             curr_page->frame_n = pages[i].frame_n;
             goto end;
