@@ -23,7 +23,7 @@ char tlb_cnt = 0;
 int frame_cnt = 0;
 int page_cnt = 0;
 
-int paging_err = 0;
+int page_fault_cnt = 0;
 int tlb_hit = 0;
 
 int read_from_file(struct page *curr_page) {
@@ -66,6 +66,7 @@ int get_frame(struct page *curr_page) {
     }
 
     curr_page->frame_n = read_from_file(curr_page);
+    ++page_fault_cnt;
 
 end:
     insert_tlb(curr_page);
@@ -98,18 +99,13 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < 1000; ++i) {
         struct page curr_page = get_page();
         get_frame(&curr_page);
-        if (curr_page.frame_n == -1) {
-            ++paging_err;
-            printf("Paging err at virtual address %d\n", (curr_page.n << 8) | curr_page.offset);
-            continue;
-        }
         printf("Virtual address: %d Physical address: %d Value: %d\n",
                (curr_page.n << 8) | curr_page.offset,
                (curr_page.frame_n << 8) | curr_page.offset,
                ram[curr_page.frame_n][curr_page.offset]);
     }
 
-    printf("\nPaging err frequency = %0.2f%%\n", paging_err / 1000. * 100);
+    printf("\nPage fault frequency = %0.2f%%\n", page_fault_cnt / 1000. * 100);
     printf("TLB frequency = %0.2f%%\n", tlb_hit / 1000. * 100);
 
     return 0;
