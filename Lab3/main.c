@@ -22,6 +22,7 @@ char ram[PAGE_CNT][FRAME_SIZE];
 char tlb_cnt = 0;
 int frame_cnt = 0;
 int page_cnt = 0;
+int processed_pages = 0;
 
 int page_fault_cnt = 0;
 int tlb_hit = 0;
@@ -96,17 +97,18 @@ int main(int argc, char *argv[]) {
 
     freopen("check.txt", "w", stdout);
 
-    for (int i = 0; i < 1000; ++i) {
+    while (!feof(stdin)) {
         struct page curr_page = get_page();
         get_frame(&curr_page);
         printf("Virtual address: %d Physical address: %d Value: %d\n",
                (curr_page.n << 8) | curr_page.offset,
                (curr_page.frame_n << 8) | curr_page.offset,
                ram[curr_page.frame_n][curr_page.offset]);
+        ++processed_pages;
     }
 
-    printf("\nPage fault frequency = %0.2f%%\n", page_fault_cnt / 1000. * 100);
-    printf("TLB frequency = %0.2f%%\n", tlb_hit / 1000. * 100);
+    printf("\nPage fault frequency = %0.2f%%\n", page_fault_cnt * 100. / processed_pages);
+    printf("TLB frequency = %0.2f%%\n", tlb_hit * 100. / processed_pages);
 
     return 0;
 }
