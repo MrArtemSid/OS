@@ -81,12 +81,18 @@ struct page get_page() {
 }
 
 int main(int argc, char *argv[]) {
-    if (!freopen("../addresses.txt", "r", stdin))
-        return -1;
-    if (!freopen("check.txt", "w", stdout))
-        return -1;
+    if (argc != 2 || !freopen(argv[1], "r", stdin)) {
+        printf("input reading error\n");
+        return 1;
+    }
 
-    backing_store = fopen("../BACKING_STORE.bin", "rb");
+    backing_store = fopen("BACKING_STORE.bin", "rb");
+    if (backing_store == NULL) {
+        printf("BACKING_STORE.bin reading error\n");
+        return 1;
+    }
+
+    freopen("check.txt", "w", stdout);
 
     for (int i = 0; i < 1000; ++i) {
         struct page curr_page = get_page();
