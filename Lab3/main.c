@@ -2,7 +2,6 @@
 #include <string.h>
 
 #define PAGE_CNT 1 << 8
-#define PAGE_SIZE 1 << 8
 #define TLB_CNT 16
 #define FRAME_SIZE 1 << 8
 
@@ -19,7 +18,6 @@ struct page {
 struct page tlb [TLB_CNT];
 struct page pages [PAGE_CNT];
 char ram[PAGE_CNT][FRAME_SIZE];
-char buffer[PAGE_SIZE];
 
 char tlb_cnt = 0;
 int frame_cnt = 0;
@@ -28,15 +26,13 @@ int page_cnt = 0;
 int paging_err = 0;
 int tlb_hit = 0;
 
-
 int read_from_file(struct page *curr_page) {
     if (frame_cnt >= PAGE_CNT || page_cnt >= PAGE_CNT) {
         return -1;
     }
 
     fseek(backing_store, curr_page->n * FRAME_SIZE, SEEK_SET);
-    fread(buffer, sizeof(signed char), FRAME_SIZE, backing_store);
-    memcpy(ram[frame_cnt], buffer, FRAME_SIZE);
+    fread(ram[frame_cnt], sizeof(char), FRAME_SIZE, backing_store);
 
     pages[page_cnt].n = curr_page->n;
     pages[page_cnt].frame_n = frame_cnt;
@@ -47,7 +43,7 @@ int read_from_file(struct page *curr_page) {
 
 void insert_tlb(struct page *curr_page) {
     if (tlb_cnt == 16) {
-        memmove(&tlb[1], &tlb[2], sizeof(struct page) * 15);
+        memmove(&tlb[0], &tlb[1], sizeof(struct page) * 15);
         tlb_cnt--;
     }
     tlb[tlb_cnt++] = *curr_page;
