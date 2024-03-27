@@ -1,11 +1,11 @@
-#include "stdio.h"
+#include <stdio.h>
 #include "list.h"
 #include "cpu.h"
 #include "schedulers.h"
 #define COMPARABLE priority
 #include "priority_queue.h"
 
-int used[MAX_PRIORITY + 1];
+int used[MAX_SIZE];
 struct PriorityQueue pq = {{0}, 0};
 
 struct node *tasks = NULL;
@@ -68,19 +68,22 @@ void schedule_helper_cycle() {
 
 void schedule() {
     Task *currTask;
-
-    while ((currTask = pickNextTask())) {
-        if (used[currTask->priority] > 1) {
-            while (used[currTask->priority] > 0) {
+    currTask = pickNextTask();
+    while (currTask != NULL) {
+        int cntInSamePriority = used[currTask->priority];
+        if (cntInSamePriority > 1) {
+            used[currTask->priority] = 0;
+            while (cntInSamePriority) {
                 insert(&tasks, currTask);
                 currTask = pickNextTask();
-                --used[currTask->priority];
+                --cntInSamePriority;
             }
 
             while (tasks) {
                 schedule_helper_cycle();
                 prev = tasks;
             }
+            continue;
         }
 
         if (!currTask->start_time)
@@ -88,7 +91,7 @@ void schedule() {
 
         run(currTask, currTask->burst);
         free(currTask);
+        currTask = pickNextTask();
     }
     show_times();
 }
-
