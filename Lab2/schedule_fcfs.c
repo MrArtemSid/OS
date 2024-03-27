@@ -22,6 +22,9 @@ void add(char *name, int priority, int burst) {
     newTask->name = name;
     newTask->priority = priority;
     newTask->burst = burst;
+    newTask->start_time = 0;
+    newTask->end_time = 0;
+    cntTasks += 1;
     insert(&tasks, newTask);
 }
 
@@ -32,10 +35,12 @@ void schedule_helper(Task *currTask) {
 
     Task *nextTask = pickNextTask();
     schedule_helper(nextTask);
+    currTask->end_time = currTime + currTask->burst;
     run(currTask, currTask->burst);
 }
 
 void schedule() {
     Task *currTask = pickNextTask();
     schedule_helper(currTask);
+    show_times();
 }

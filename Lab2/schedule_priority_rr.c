@@ -42,6 +42,9 @@ void add(char *name, int priority, int burst) {
     newTask.name = name;
     newTask.priority = priority;
     newTask.burst = burst;
+    newTask.start_time = 0;
+    newTask.end_time = 0;
+    cntTasks += 1;
     ++used[priority];
     insert_pq(&pq, newTask);
 }
@@ -50,6 +53,9 @@ void schedule_helper_cycle() {
     Task *currTask;
     while ((currTask = pickNextTask_cycle())) {
         int delta = min(QUANTUM, currTask->burst);
+        if (!(currTask->burst - delta)) {
+            currTask->end_time = currTime + delta;
+        }
         run(currTask, delta);
         currTask->burst -= delta;
         if (!currTask->burst) {
@@ -62,6 +68,7 @@ void schedule_helper_cycle() {
 
 void schedule() {
     Task *currTask;
+
     while ((currTask = pickNextTask())) {
         if (used[currTask->priority] > 1) {
             while (used[currTask->priority] > 0) {
@@ -76,8 +83,12 @@ void schedule() {
             }
         }
 
+        if (!currTask->start_time)
+            currTask->end_time = currTime + currTask->burst;
+
         run(currTask, currTask->burst);
         free(currTask);
     }
+    show_times();
 }
 

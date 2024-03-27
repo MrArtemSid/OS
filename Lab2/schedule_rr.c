@@ -27,6 +27,9 @@ void add(char *name, int priority, int burst) {
     newTask->name = name;
     newTask->priority = priority;
     newTask->burst = burst;
+    newTask->start_time = 0;
+    newTask->end_time = 0;
+    cntTasks += 1;
     insert(&tasks, newTask);
 }
 
@@ -34,6 +37,9 @@ void schedule_helper_cycle() {
     Task *currTask;
     while ((currTask = pickNextTask())) {
         int delta = min(QUANTUM, currTask->burst);
+        if (!(currTask->burst - delta)) {
+            currTask->end_time = currTime + delta;
+        }
         run(currTask, delta);
         currTask->burst -= delta;
         if (!currTask->burst) {
@@ -49,6 +55,7 @@ void schedule() {
         schedule_helper_cycle();
         prev = tasks;
     }
+    show_times();
 }
 
 
@@ -61,6 +68,9 @@ void schedule_helper(Task *currTask) {
     Task *nextTask = pickNextTask();
     schedule_helper(nextTask);
     int delta = min(QUANTUM, currTask->burst);
+    if (!(currTask->burst - delta)) {
+        currTask->end_time = currTime + delta;
+    }
     run(currTask, delta);
     currTask->burst -= delta;
     if (!currTask->burst) {
@@ -76,5 +86,6 @@ void schedule_rec() {
         schedule_helper(currTask);
         prev = tasks;
     }
+    show_times();
 }
 */
