@@ -2,7 +2,7 @@
 #include "list.h"
 #include "cpu.h"
 #include "schedulers.h"
-#define COMPARABLE priority
+#define COMPARABLE priority * -1
 #include "priority_queue.h"
 
 int used[MAX_SIZE];
