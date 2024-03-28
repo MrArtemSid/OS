@@ -42,8 +42,8 @@ void add(char *name, int priority, int burst) {
     newTask.name = name;
     newTask.priority = priority;
     newTask.burst = burst;
-    newTask.start_time = 0;
-    newTask.end_time = 0;
+    newTask.start_time = -1;
+    newTask.end_time = -1;
     cntTasks += 1;
     ++used[priority];
     insert_pq(&pq, newTask);

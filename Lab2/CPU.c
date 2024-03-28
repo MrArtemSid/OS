@@ -13,12 +13,12 @@ int waitingTime = 0;
 // run this task for the specified time slice
 void run(Task *task, int slice) {
 
-    if (task->start_time == 0) {
+    if (task->start_time == -1) {
         task->start_time = currTime;
         responseTime += task->start_time;
     }
 
-    if (task->end_time != 0) {
+    if (task->end_time != -1) {
         turnaroundTime += task->end_time;
         waitingTime += task->end_time - task->start_time;
     }
