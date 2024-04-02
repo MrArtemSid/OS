@@ -21,21 +21,35 @@ task worktodo;
 pthread_t bee;
 pthread_mutex_t queue_lock = PTHREAD_MUTEX_INITIALIZER;
 
-// insert a task into the queue
-// returns 0 if successful or 1 otherwise, 
-int enqueue(task t) 
-{
-    pthread_mutex_lock(&queue_lock);
+struct node *queue = NULL;
 
+// insert a task into the queue
+// returns 0 if successful or 1 otherwise,
+int enqueue(task t)
+{
+    int ret = 0;
+
+    task *newTask = malloc(sizeof(task));
+    if (!newTask) {
+        ret = 1;
+        return ret;
+    }
+
+    newTask->function = t.function;
+    newTask->data = t.data;
+
+    pthread_mutex_lock(&queue_lock);
+    insert(&queue, newTask);
     pthread_mutex_unlock(&queue_lock);
-    return 0;
+
+    return ret;
 }
 
 // remove a task from the queue
-task dequeue() 
+task dequeue()
 {
     pthread_mutex_lock(&queue_lock);
-
+    delete(&queue, queue->t);
     pthread_mutex_unlock(&queue_lock);
     return worktodo;
 }
@@ -43,8 +57,10 @@ task dequeue()
 // the worker thread in the thread pool
 void *worker(void *param)
 {
-    // execute the task
-    execute(worktodo.function, worktodo.data);
+    while (queue != NULL) {
+        execute(queue->t->function, queue->t->data);
+        dequeue();
+    }
     pthread_exit(0);
 }
 
@@ -61,20 +77,25 @@ void execute(void (*somefunction)(void *p), void *p)
  */
 int pool_submit(void (*somefunction)(void *p), void *p)
 {
+    int ret = 0;
+
     worktodo.function = somefunction;
     worktodo.data = p;
+    ret = enqueue(worktodo);
 
-    return 0;
+    return ret;
 }
 
 // initialize the thread pool
 void pool_init(void)
 {
+    pthread_mutex_init(&queue_lock, NULL);
     pthread_create(&bee,NULL,worker,NULL);
 }
 
 // shutdown the thread pool
 void pool_shutdown(void)
 {
+    pthread_mutex_destroy(&queue_lock);
     pthread_join(bee,NULL);
 }
