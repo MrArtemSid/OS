@@ -27,17 +27,24 @@ task worktodo;
 
 // the worker bee
 pthread_t bee;
+pthread_mutex_t queue_lock = PTHREAD_MUTEX_INITIALIZER;
 
 // insert a task into the queue
 // returns 0 if successful or 1 otherwise, 
 int enqueue(task t) 
 {
+    pthread_mutex_lock(&queue_lock);
+
+    pthread_mutex_unlock(&queue_lock);
     return 0;
 }
 
 // remove a task from the queue
 task dequeue() 
 {
+    pthread_mutex_lock(&queue_lock);
+
+    pthread_mutex_unlock(&queue_lock);
     return worktodo;
 }
 
@@ -46,7 +53,6 @@ void *worker(void *param)
 {
     // execute the task
     execute(worktodo.function, worktodo.data);
-
     pthread_exit(0);
 }
 
