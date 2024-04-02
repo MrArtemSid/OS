@@ -17,8 +17,8 @@
 // the work queue
 task worktodo;
 
-// the worker bee
-pthread_t bee;
+// the worker bees
+pthread_t bees[NUMBER_OF_THREADS];
 pthread_mutex_t queue_lock = PTHREAD_MUTEX_INITIALIZER;
 sem_t sem;
 
@@ -103,7 +103,9 @@ void pool_init(void)
 {
     pthread_mutex_init(&queue_lock, NULL);
     sem_init(&sem, 0, 0);
-    pthread_create(&bee,NULL,worker,NULL);
+    for (int th = 0; th < NUMBER_OF_THREADS; ++th) {
+        pthread_create(&bees[th],NULL,worker,NULL);
+    }
 }
 
 // shutdown the thread pool
@@ -111,5 +113,8 @@ void pool_shutdown(void)
 {
     pthread_mutex_destroy(&queue_lock);
     sem_destroy(&sem);
-    pthread_join(bee,NULL);
+    for (int th = 0; th < NUMBER_OF_THREADS; ++th) {
+        pthread_cancel(bees[th]);
+        pthread_join(bees[th],NULL);
+    }
 }
