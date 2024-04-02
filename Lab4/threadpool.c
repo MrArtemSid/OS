@@ -20,6 +20,7 @@ task worktodo;
 // the worker bee
 pthread_t bee;
 pthread_mutex_t queue_lock = PTHREAD_MUTEX_INITIALIZER;
+sem_t sem;
 
 struct node *queue = NULL;
 int queue_len = 0;
@@ -65,6 +66,7 @@ task dequeue()
 void *worker(void *param)
 {
     while (queue != NULL) {
+        sem_wait(&sem);
         execute(queue->t->function, queue->t->data);
         dequeue();
     }
@@ -90,6 +92,9 @@ int pool_submit(void (*somefunction)(void *p), void *p)
     worktodo.data = p;
     ret = enqueue(worktodo);
 
+    if (!ret)
+        sem_post(&sem);
+
     return ret;
 }
 
@@ -97,6 +102,7 @@ int pool_submit(void (*somefunction)(void *p), void *p)
 void pool_init(void)
 {
     pthread_mutex_init(&queue_lock, NULL);
+    sem_init(&sem, 0, 0);
     pthread_create(&bee,NULL,worker,NULL);
 }
 
@@ -104,5 +110,6 @@ void pool_init(void)
 void pool_shutdown(void)
 {
     pthread_mutex_destroy(&queue_lock);
+    sem_destroy(&sem);
     pthread_join(bee,NULL);
 }
