@@ -15,8 +15,6 @@ void insert(struct node **head, task *newTask) {
     newNode->t = newTask;
     newNode->next = *head;
     *head = newNode;
-
-    ++queue_len;
 }
 
 // delete the selected task from the list
@@ -40,5 +38,4 @@ void delete(struct node **head, task *task) {
 
         prev->next = temp->next;
     }
-    --queue_len;
 }

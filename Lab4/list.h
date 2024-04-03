@@ -19,4 +19,4 @@ struct node {
 // insert and delete operations.
 void insert(struct node **head, task *t);
 void delete(struct node **head, task *t);
-extern int queue_len;
+void traverse(struct node *head);

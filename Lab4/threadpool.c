@@ -23,7 +23,6 @@ pthread_mutex_t queue_lock = PTHREAD_MUTEX_INITIALIZER;
 sem_t sem;
 
 struct node *queue = NULL;
-int queue_len = 0;
 
 // insert a task into the queue
 // returns 0 if successful or 1 otherwise,
@@ -31,15 +30,10 @@ int enqueue(task t)
 {
     int ret = 0;
 
-    if (queue_len >= QUEUE_SIZE) {
-        ret = 1;
-        goto end;
-    }
-
     task *newTask = malloc(sizeof(task));
     if (!newTask) {
         ret = 1;
-        goto end;
+        return ret;
     }
 
     newTask->function = t.function;
@@ -49,7 +43,6 @@ int enqueue(task t)
     insert(&queue, newTask);
     pthread_mutex_unlock(&queue_lock);
 
-end:
     return ret;
 }
 
