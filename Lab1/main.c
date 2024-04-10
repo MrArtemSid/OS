@@ -176,6 +176,7 @@ int main(int argc, char **argv) {
     status = 0; // статус выполнения, если не 0, то программа завершается
     char *args[10];
     char path[256]; // массив для сохранения пути
+    int i; // индекс для args
 
     getcwd(path, 256);
     setenv("shell", strcat(path, "/myshell"), 1);
@@ -187,11 +188,9 @@ int main(int argc, char **argv) {
         inp_ptr = NULL;
         getline(&inp_ptr, &n, stdin); // ввод пользователя
 
-        args[0] = strtok(inp_ptr, " \n");
-        int i = 1;
-        while (args[i - 1]) {
-            args[i++] = strtok(NULL, " \n");
-        }
+        i = 0;
+        args[i++] = strtok(inp_ptr, " \n");
+        while (args[i++] = strtok(NULL, " \n"));
 
         if (!is_fn_exist(args)) { // если команды нет в списке существующих, то запуск программ
             run_cmd(args);
