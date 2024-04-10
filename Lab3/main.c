@@ -74,12 +74,10 @@ end:
     return 0;
 }
 
-struct page get_page() {
-    int tmp;
+struct page get_page(int log_address) {
     struct page curr_page;
-    scanf("%d", &tmp);
-    curr_page.offset = tmp & offset_mask;
-    curr_page.n = (tmp >> 8) & offset_mask;
+    curr_page.offset = log_address & offset_mask;
+    curr_page.n = (log_address >> 8) & offset_mask;
     return curr_page;
 }
 
@@ -97,8 +95,10 @@ int main(int argc, char *argv[]) {
 
     freopen("check.txt", "w", stdout);
 
-    while (!feof(stdin)) {
-        struct page curr_page = get_page();
+    int log_address = 0;
+
+    while (scanf("%d", &log_address) == 1) {
+        struct page curr_page = get_page(log_address);
         get_frame(&curr_page);
         printf("Virtual address: %d Physical address: %d Value: %d\n",
                (curr_page.n << 8) | curr_page.offset,
