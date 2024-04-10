@@ -174,6 +174,7 @@ int main(int argc, char **argv) {
     char * inp_ptr; // указатель на строку
     size_t n; // размер строки
     status = 0; // статус выполнения, если не 0, то программа завершается
+    char *args[10];
     char path[256]; // массив для сохранения пути
 
     getcwd(path, 256);
@@ -185,9 +186,12 @@ int main(int argc, char **argv) {
 
         inp_ptr = NULL;
         getline(&inp_ptr, &n, stdin); // ввод пользователя
-        char **args = malloc(2 * sizeof(char *));
-        args[0] = strtok(inp_ptr, " \n"); // сохранение команды
-        args[1] = strtok(NULL, " \n"); // сохранение аргумента команды
+
+        args[0] = strtok(inp_ptr, " \n");
+        int i = 1;
+        while (args[i - 1]) {
+            args[i++] = strtok(NULL, " \n");
+        }
 
         if (!is_fn_exist(args)) { // если команды нет в списке существующих, то запуск программ
             run_cmd(args);
@@ -195,6 +199,7 @@ int main(int argc, char **argv) {
 
         n = 0;
         free(inp_ptr);
+        memset(args, NULL, 10 * sizeof(char *));
     }
 
     return 0;
