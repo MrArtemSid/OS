@@ -35,10 +35,10 @@ int main(void)
     // initialize the thread pool
     pool_init();
 
+    // submit the work to the queue
     for (int i = 0; i < sizeof (works) / sizeof (struct data); ++i) {
         pool_submit(&add,&works[i]);
     }
-    // submit the work to the queue
 
     // may be helpful 
     //sleep(3);
