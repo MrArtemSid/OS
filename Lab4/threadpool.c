@@ -63,7 +63,6 @@ void *worker(void *param)
         execute(queue->t->function, queue->t->data);
         dequeue();
     }
-    pthread_exit(0);
 }
 
 /**

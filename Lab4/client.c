@@ -28,8 +28,8 @@ int main(void)
 
     struct data works[10];
     for (int i = 0; i < sizeof (works) / sizeof (struct data); ++i) {
-        works[i].a = rand() % 100;
-        works[i].b = rand() % 100;
+        works[i].a = rand() % 107;
+        works[i].b = rand() % 139;
     }
 
     // initialize the thread pool
