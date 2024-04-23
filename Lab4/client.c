@@ -3,6 +3,8 @@
  */
 
 #include <stdio.h>
+#include <time.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include "threadpool.h"
 
@@ -22,16 +24,21 @@ void add(void *param)
 
 int main(void)
 {
-    // create some work to do
-    struct data work;
-    work.a = 5;
-    work.b = 10;
+    srand(time(NULL));   // Initialization, should only be called once.
+
+    struct data works[10];
+    for (int i = 0; i < sizeof (works) / sizeof (struct data); ++i) {
+        works[i].a = rand() % 100;
+        works[i].b = rand() % 100;
+    }
 
     // initialize the thread pool
     pool_init();
 
+    for (int i = 0; i < sizeof (works) / sizeof (struct data); ++i) {
+        pool_submit(&add,&works[i]);
+    }
     // submit the work to the queue
-    pool_submit(&add,&work);
 
     // may be helpful 
     //sleep(3);
