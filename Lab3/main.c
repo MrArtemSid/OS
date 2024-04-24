@@ -51,25 +51,30 @@ void insert_tlb(struct page *curr_page) {
 }
 
 int get_frame(struct page *curr_page) {
+    char hit = 0;
+
     for (int i = tlb_len; i >= 0; --i) {
         if (tlb[i].n == curr_page->n) {
             curr_page->frame_n = tlb[i].frame_n;
             ++tlb_hit;
-            goto end;
+            hit = 1;
+            break;
         }
     }
 
-    for (int i = 0; i < pages_len; ++i) {
+    for (int i = 0; i < pages_len && !hit; ++i) {
         if (pages[i].n == curr_page->n) {
             curr_page->frame_n = pages[i].frame_n;
-            goto end;
+            hit = 1;
+            break;
         }
     }
 
-    curr_page->frame_n = read_from_file(curr_page);
-    ++page_fault_cnt;
+    if (!hit) {
+        curr_page->frame_n = read_from_file(curr_page);
+        ++page_fault_cnt;
+    }
 
-end:
     insert_tlb(curr_page);
     return 0;
 }
