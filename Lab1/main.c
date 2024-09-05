@@ -163,6 +163,55 @@ int run_cmd (char **args) {
     return 0;
 }
 
+int console_input;  // Стандартный консольный ввод
+int console_output; // Стандартный консольный вывод
+
+void restore_original_fd() {
+    dup2(console_input, STDIN_FILENO);
+    dup2(console_output, STDOUT_FILENO);
+}
+
+void handle_redirection(char **args) {
+    int i = 0;
+    char *input_file = NULL;
+    char *output_file = NULL;
+    int append_mode = 0;
+
+    // Поиск символов
+    while (args[i] != NULL) {
+        if (strcmp(args[i], "<") == 0) {
+            input_file = args[i + 1];
+            args[i] = NULL; // Игнорируем текущий элемент
+        } else if (strcmp(args[i], ">") == 0) {
+            output_file = args[i + 1];
+            args[i] = NULL; // Игнорируем текущий элемент
+        } else if (strcmp(args[i], ">>") == 0) {
+            output_file = args[i + 1];
+            args[i] = NULL; // Игнорируем текущий элемент
+            append_mode = 1;
+        }
+        ++i;
+    }
+
+    // Перенаправление ввода
+    if (input_file) {
+        if (freopen(input_file, "r", stdin) == NULL) {
+            perror("Error opening input file");
+            restore_original_fd();
+            return;
+        }
+    }
+
+    // Перенаправление вывода
+    if (output_file) {
+        const char *mode = append_mode ? "a" : "w"; // Устанавливаем режим
+        if (freopen(output_file, mode, stdout) == NULL) {
+            perror("Error opening output file");
+            restore_original_fd();
+        }
+    }
+}
+
 // Основная функция оболочки
 int main(int argc, char **argv) {
     // Переключение на ввод с файла, если предоставлен аргумент или же вывод ошибки если файла не существует
@@ -178,6 +227,9 @@ int main(int argc, char **argv) {
     char path[256]; // массив для сохранения пути
     int i; // индекс для args
 
+    console_input = dup(STDIN_FILENO); // Стандартный консольный ввод
+    console_output = dup(STDOUT_FILENO); // Стандартный консольный вывод
+
     getcwd(path, 256);
     setenv("shell", strcat(path, "/myshell"), 1);
 
@@ -192,13 +244,15 @@ int main(int argc, char **argv) {
         args[i++] = strtok(inp_ptr, " \n");
         while (args[i++] = strtok(NULL, " \n"));
 
+        handle_redirection(args);
         if (!is_fn_exist(args)) { // если команды нет в списке существующих, то запуск программ
             run_cmd(args);
         }
 
         n = 0;
         free(inp_ptr);
-        memset(args, NULL, 10 * sizeof(char *));
+        restore_original_fd();
+        memset(args, 0, 10 * sizeof(char *));
     }
 
     return 0;
