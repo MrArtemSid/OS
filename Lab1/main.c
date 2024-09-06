@@ -171,7 +171,7 @@ void restore_original_fd() {
     dup2(console_output, STDOUT_FILENO);
 }
 
-void handle_redirection(char **args) {
+int handle_redirection(char **args) {
     int i = 0;
     char *input_file = NULL;
     char *output_file = NULL;
@@ -195,22 +195,34 @@ void handle_redirection(char **args) {
 
     // Перенаправление ввода
     if (input_file) {
-        if (freopen(input_file, "r", stdin) == NULL) {
+        FILE *file = fopen(input_file, "r");
+        if (file) {
+            dup2(fileno(file), STDIN_FILENO);
+            fclose(file);
+        } else {
             perror("Error opening input file");
             restore_original_fd();
-            return;
+            return 1;
         }
     }
 
     // Перенаправление вывода
     if (output_file) {
         const char *mode = append_mode ? "a" : "w"; // Устанавливаем режим
-        if (freopen(output_file, mode, stdout) == NULL) {
+        FILE *file = fopen(output_file, mode);
+
+        if (file) {
+            dup2(fileno(file), STDOUT_FILENO);
+            fclose(file);
+        } else {
             perror("Error opening output file");
             restore_original_fd();
+            return 1;
         }
     }
+    return 0;
 }
+
 
 // Основная функция оболочки
 int main(int argc, char **argv) {
@@ -244,7 +256,9 @@ int main(int argc, char **argv) {
         args[i++] = strtok(inp_ptr, " \n");
         while (args[i++] = strtok(NULL, " \n"));
 
-        handle_redirection(args);
+        if (handle_redirection(args)) // попытка редиректа, в случае ошибки - пропуск команды
+            continue;
+
         if (!is_fn_exist(args)) { // если команды нет в списке существующих, то запуск программ
             run_cmd(args);
         }
