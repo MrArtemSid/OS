@@ -151,13 +151,19 @@ int run_cmd (char **args) {
 
     if (pid == 0) {
         // Child процесс
+        if (is_background) {
+            // Перенаправляем stdout и stderr в /dev/null
+            freopen("/dev/null", "w", stdout);
+            freopen("/dev/null", "w", stderr);
+        }
         execvp(args[0], args);
         perror("execvp");
         return(EXIT_FAILURE);
     } else if (pid < 0) {
         perror("fork");
     } else {
-        wait(NULL); // Ожидание завершения child процесса
+        if (!is_background)
+            wait(NULL);
     }
 
     return 0;
@@ -189,6 +195,9 @@ int handle_redirection(char **args) {
             output_file = args[i + 1];
             args[i] = NULL; // Игнорируем текущий элемент
             append_mode = 1;
+        } else if (strcmp(args[i], "&") == 0) {
+            args[i] = NULL;
+            is_background = true;
         }
         ++i;
     }
@@ -266,6 +275,7 @@ int main(int argc, char **argv) {
         n = 0;
         free(inp_ptr);
         restore_original_fd();
+        is_background = false;
         memset(args, 0, 10 * sizeof(char *));
     }
 

@@ -10,3 +10,4 @@ char * fn_list[];
 char * fn_list_help[];
 int fn_cnt ();
 int status = 0; // статус выполнения, если не 0, то программа завершается
+bool is_background = false;
