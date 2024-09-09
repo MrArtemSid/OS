@@ -175,6 +175,7 @@ int console_output; // Стандартный консольный вывод
 void restore_original_fd() {
     dup2(console_input, STDIN_FILENO);
     dup2(console_output, STDOUT_FILENO);
+    dup2(console_output, STDERR_FILENO);
 }
 
 int handle_redirection(char **args) {
@@ -222,6 +223,7 @@ int handle_redirection(char **args) {
 
         if (file) {
             dup2(fileno(file), STDOUT_FILENO);
+            dup2(fileno(file), STDERR_FILENO);
             fclose(file);
         } else {
             perror("Error opening output file");
