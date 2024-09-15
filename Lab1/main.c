@@ -256,7 +256,7 @@ int main(int argc, char **argv) {
     getcwd(path, 256);
     setenv("shell", strcat(path, "/myshell"), 1);
 
-    while (!status) {
+    while (!status && !feof(stdin)) {
         getcwd(path, 256);
         printf("(Shell) [%s] $ ", path);
 
