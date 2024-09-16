@@ -258,7 +258,9 @@ int main(int argc, char **argv) {
 
     while (!status && !feof(stdin)) {
         getcwd(path, 256);
-        printf("(Shell) [%s] $ ", path);
+
+        if (argc != 2)
+            printf("(Shell) [%s] $ ", path);
 
         inp_ptr = NULL;
         getline(&inp_ptr, &n, stdin); // ввод пользователя
