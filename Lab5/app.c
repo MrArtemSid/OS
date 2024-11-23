@@ -16,13 +16,13 @@ int print_file(char *filename, int fd) {
         return 0; // Файл пустой
     }
 
-    char buffer[1024];
+    char buf[1024];
     int bytes_read;
     printf("Contents of file:\n");
 
     // Чтение и вывод содержимого файла
     while (size > 0) {
-        bytes_read = sfs_read(fd, buffer, sizeof(buffer));  // Читаем данные из файла
+        bytes_read = sfs_read(fd, buf, sizeof(buf));  // Читаем данные из файла
         if (bytes_read <= 0) {
             printf("Error reading file or reached end of file\n");
             break;  // Если произошла ошибка или достигнут конец файла
@@ -30,7 +30,7 @@ int print_file(char *filename, int fd) {
 
         // Выводим прочитанные данные
         for (int i = 0; i < bytes_read; ++i) {
-            printf("%c ", buffer[i]);
+            printf("%c ", buf[i]);
         }
 
         size -= bytes_read;
