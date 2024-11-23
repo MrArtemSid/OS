@@ -52,7 +52,7 @@ typedef struct {
 // Структура для хранения информации об открытых файлах
 typedef struct {
     int fd;               // Дескриптор файла
-    int dir_id;           // Индекс записи в каталоге
+    int dir_ind;           // Индекс записи в каталоге
     char filename[32];    // Имя файла
     int mode;             // Режим доступа: чтение или запись
 } OpenedFiles;
@@ -284,7 +284,7 @@ int sfs_umount()
     for (int i = 0; i < MAX_OPENED_FILES; ++i) {
         memset(open_files[i].filename, '\0', MAX_FILENAME_LEN); // Обнуляем имя файла
         open_files[i].fd = -1;    // Устанавливаем неиспользуемое значение дескриптора
-        open_files[i].dir_id = -1; // Сбрасываем индекс каталога
+        open_files[i].dir_ind = -1; // Сбрасываем индекс каталога
         open_files[i].mode = 0;   // Обнуляем режим доступа
     }
 
@@ -393,7 +393,7 @@ int sfs_open(char *file, int mode)
     for (i = 0; i < MAX_OPENED_FILES; ++i) {
         if (open_files[i].filename[0] == '\0') { // Если слот пустой
             open_files[i].fd = i; // Присваиваем уникальный дескриптор
-            open_files[i].dir_id = file_ind; // Устанавливаем индекс файла в каталоге
+            open_files[i].dir_ind = file_ind; // Устанавливаем индекс файла в каталоге
             open_files[i].mode = mode; // Устанавливаем режим доступа (чтение/запись)
             memset(open_files[i].filename, '\0', MAX_FILENAME_LEN); // Очищаем старое имя файла
             strcpy(open_files[i].filename, file); // Записываем имя файла в таблицу открытых файлов
@@ -440,7 +440,7 @@ int sfs_close(int fd){
     // - сбрасываем индекс каталога в -1.
     open_files[fd].filename[0] = '\0';  // Очищаем имя файла
     open_files[fd].fd = -1;              // Очищаем дескриптор файла
-    open_files[fd].dir_id = -1;          // Очищаем индекс в каталоге
+    open_files[fd].dir_ind = -1;          // Очищаем индекс в каталоге
 
     // Уменьшаем счетчик открытых файлов
     // Мы закрыли файл, поэтому уменьшаем количество открытых файлов.
@@ -473,7 +473,7 @@ int sfs_getsize(int fd)
 
     // Возвращаем размер файла
     // Получаем размер файла из записи каталога, используя индекс директории, который сохранен в таблице открытых файлов.
-    return directory[open_files[fd].dir_id].size;
+    return directory[open_files[fd].dir_ind].size;
 }
 
 int sfs_read(int fd, void *buf, int n) {
@@ -483,10 +483,10 @@ int sfs_read(int fd, void *buf, int n) {
     if (fd < 0 || fd >= MAX_OPENED_FILES || open_files[fd].fd == -1)
         return -1; // Неверный дескриптор или файл не открыт
 
-    // Получаем ID записи каталога для данного файла
-    int dir_id = open_files[fd].dir_id;
-    int file_size = directory[dir_id].size; // Получаем размер файла
-    int current_block = directory[dir_id].first_block; // Получаем первый блок файла
+    // Получаем индекс записи каталога для данного файла
+    int dir_ind = open_files[fd].dir_ind;
+    int file_size = directory[dir_ind].size; // Получаем размер файла
+    int current_block = directory[dir_ind].first_block; // Получаем первый блок файла
 
     // Если размер файла равен 0 (файл пустой), возвращаем 0
     if (file_size == 0)
@@ -524,10 +524,10 @@ int sfs_append(int fd, void *buf, int n) {
     if (fd < 0 || fd >= MAX_OPENED_FILES || open_files[fd].fd == -1)
         return -1; // Неверный дескриптор или файл не открыт
 
-    // Получаем ID записи каталога для данного файла
-    int dir_id = open_files[fd].dir_id;
-    int current_block = directory[dir_id].first_block; // Получаем первый блок файла
-    int offset = directory[dir_id].size % BLOCKSIZE; // Вычисляем смещение в блоке (если файл не пустой)
+    // Получаем индекс записи каталога для данного файла
+    int dir_ind = open_files[fd].dir_ind;
+    int current_block = directory[dir_ind].first_block; // Получаем первый блок файла
+    int offset = directory[dir_ind].size % BLOCKSIZE; // Вычисляем смещение в блоке (если файл не пустой)
     int total_written = 0; // Общее количество записанных байтов
     char block[BLOCKSIZE] = {0}; // Буфер для записи данных в блок
 
@@ -536,7 +536,7 @@ int sfs_append(int fd, void *buf, int n) {
         current_block = find_free_block();
         if (current_block == -1)
             return -1; // Нет свободных блоков
-        directory[dir_id].first_block = current_block; // Записываем первый блок в директорию
+        directory[dir_ind].first_block = current_block; // Записываем первый блок в директорию
     } else {
         // Если файл уже существует, читаем текущий блок для продолжения записи
         read_block(block, current_block);
@@ -572,7 +572,7 @@ int sfs_append(int fd, void *buf, int n) {
         write_block(block, current_block); // Записываем неполный блок
 
     // Обновляем размер файла в директории
-    directory[dir_id].size += total_written;
+    directory[dir_ind].size += total_written;
 
     // Возвращаем количество записанных байтов
     return total_written;
@@ -586,10 +586,10 @@ int sfs_delete(char *filename)
         // Проверка на совпадение имени файла в открытых файлах
         if (strcmp(open_files[i].filename, filename) == 0) {
             // Если файл открыт, сбрасываем его запись в таблице open_files
-            clear_ind = open_files[i].dir_id;
+            clear_ind = open_files[i].dir_ind;
             open_files[i].filename[0] = '\0';  // Очищаем имя файла
             open_files[i].fd = -1;  // Сбрасываем дескриптор
-            open_files[i].dir_id = -1;  // Сбрасываем идентификатор директории
+            open_files[i].dir_ind = -1;  // Сбрасываем индекс директории
             break;
         }
     }
