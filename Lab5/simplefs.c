@@ -92,9 +92,9 @@ int abs(int a) {
 int find_free_block() {
     // Ищем свободный блок в FAT
     // Пропускаем первые CNT_BLOCKS блоков (корневой каталог) и FAT_ENTRIES_CNT_BLOCKS блоков (для таблицы FAT)
-    for (int i = CNT_BLOCKS + FAT_ENTRIES_CNT_BLOCKS; i < superblock.total_blocks; i++) {
-        int offset = CNT_BLOCKS + FAT_ENTRIES_CNT_BLOCKS;
-        if (fat[i - offset].next_block == 0) // Если блок свободен
+    int reserved_blocks_count = CNT_BLOCKS + FAT_ENTRIES_CNT_BLOCKS;
+    for (int i = reserved_blocks_count; i < superblock.total_blocks; i++) {
+        if (fat[i - reserved_blocks_count].next_block == 0) // Если блок свободен
             return i; // Возвращаем индекс свободного блока
     }
 
