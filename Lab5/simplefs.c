@@ -20,9 +20,10 @@
 #define MAX_FILENAME_LEN 32          // Максимальная длина имени файла
 #define MAX_OPENED_FILES 10          // Максимальное количество одновременно открытых файлов
 
-#define SIZE_FAT_ENTRY_BYTES 8       // Размер одной записи FAT (таблицы размещения файлов) в байтах
+#define SIZE_FAT_ENTRY 8       // Размер одной записи FAT (таблицы размещения файлов) в байтах
+#define FAT_ENTRIES_PER_BLOCK (BLOCKSIZE / SIZE_FAT_ENTRY)
 #define FAT_ENTRIES_CNT_BLOCKS 1024  // Количество записей FAT на блок
-#define FAT_ENTRIES_CNT (1024 * 128) // Общее количество записей FAT для всех блоков
+#define FAT_ENTRIES_CNT (FAT_ENTRIES_CNT_BLOCKS * FAT_ENTRIES_PER_BLOCK) // Общее количество записей FAT для всех блоков
 
 // Структура суперблока: метаинформация о файловой системе
 typedef struct {
@@ -91,9 +92,10 @@ int abs(int a) {
 int find_free_block() {
     // Ищем свободный блок в FAT
     // Пропускаем первые CNT_BLOCKS блоков (корневой каталог) и FAT_ENTRIES_CNT_BLOCKS блоков (для таблицы FAT)
-    for (int i = 0; i < (superblock.total_blocks - CNT_BLOCKS - FAT_ENTRIES_CNT_BLOCKS); i++) {
-        if (fat[i].next_block == 0) // Если блок свободен
-            return i + CNT_BLOCKS + FAT_ENTRIES_CNT_BLOCKS; // Возвращаем индекс свободного блока
+    for (int i = CNT_BLOCKS + FAT_ENTRIES_CNT_BLOCKS; i < superblock.total_blocks; i++) {
+        int offset = CNT_BLOCKS + FAT_ENTRIES_CNT_BLOCKS;
+        if (fat[i - offset].next_block == 0) // Если блок свободен
+            return i; // Возвращаем индекс свободного блока
     }
 
     // Если свободных блоков нет, возвращаем -1
