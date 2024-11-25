@@ -37,7 +37,6 @@ int print_file(char *filename, int fd) {
     }
 
     printf("\nEnd of file\n\n");
-    sfs_close(fd);  // Закрываем файл
     return 0;
 }
 
